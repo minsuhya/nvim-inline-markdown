@@ -24,10 +24,11 @@ function M.render(buf, node)
       end_col = mecol,
       conceal = "",
     })
-    -- h2..h6 get a colored accent bar; h1/h2 get a full-width underline
+    -- h2..h6 get colored accent bars (one per depth: h2 ▎, h3 ▎▎, …);
+    -- h1/h2 get a full-width underline
     if level >= 2 then
       vim.api.nvim_buf_set_extmark(buf, state.ns, row, col, {
-        virt_text = { { style.bar, hl } },
+        virt_text = { { string.rep(style.bar, level - 1), hl } },
         virt_text_pos = "inline",
       })
     end

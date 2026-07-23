@@ -2,6 +2,10 @@
 
 ## Heading Two
 
+### Heading Three
+
+#### Heading Four
+
 Some paragraph with **bold**, *italic*, `code span`, ~~strike~~, <https://auto.link> and a [link](https://example.com).
 
 > [!NOTE]
