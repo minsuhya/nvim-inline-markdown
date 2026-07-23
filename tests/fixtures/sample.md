@@ -31,8 +31,9 @@ print(x)
 
 | 단축키 | 기능 |
 | --- | --- |
-| <Leader>e | Neo-tree 파일 탐색기 토글 |
-| \ | 수직 분할 |
+| `<Leader>e` | Neo-tree 파일 탐색기 토글 |
+| \| | 수직 분할 (escaped pipe) |
+| `]b` / `[b` | 다음 / 이전 버퍼 |
 | <C-h/j/k/l> | 창 간 이동 |
 
 ---

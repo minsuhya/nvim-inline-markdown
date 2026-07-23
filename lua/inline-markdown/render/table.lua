@@ -9,6 +9,19 @@ local M = {}
 ---@field line string raw line text
 ---@field pipes integer[] 1-based byte positions of every `|`
 
+---Byte positions of column-separator pipes (`\|` escapes excluded).
+---@param line string
+---@return integer[]
+local function scan_pipes(line)
+  local pipes = {}
+  local col = line:find("|", 1, true)
+  while col do
+    if line:sub(col - 1, col - 1) ~= "\\" then pipes[#pipes + 1] = col end
+    col = line:find("|", col + 1, true)
+  end
+  return pipes
+end
+
 ---@param buf integer
 ---@param node TSNode pipe_table node
 ---@return InlineMarkdown.TableRow[]
@@ -19,12 +32,7 @@ local function collect_rows(buf, node)
     if t == "pipe_table_header" or t == "pipe_table_delimiter_row" or t == "pipe_table_row" then
       local lnum = child:range()
       local line = vim.api.nvim_buf_get_lines(buf, lnum, lnum + 1, false)[1] or ""
-      local pipes = {}
-      local col = line:find("|", 1, true)
-      while col do
-        pipes[#pipes + 1] = col
-        col = line:find("|", col + 1, true)
-      end
+      local pipes = scan_pipes(line)
       if #pipes >= 2 then
         rows[#rows + 1] = { lnum = lnum, kind = t, line = line, pipes = pipes }
       end
@@ -33,12 +41,32 @@ local function collect_rows(buf, node)
   return rows
 end
 
+---Approximate the width a cell occupies after inline concealment: code-span
+---backticks, emphasis/strikethrough delimiters and link/autolink syntax are
+---hidden at render time, so they must not count toward the cell width.
+---@param text string
+---@return integer
+local function rendered_width(text)
+  local style = config.options.style
+  local s = text
+  local icon = style.link.icon or ""
+  s = s:gsub("%[([^%]]*)%]%([^%)]*%)", icon .. "%1")
+  s = s:gsub("<(https?://[^>]+)>", "%1")
+  if style.conceal_inline then
+    s = s:gsub("(`+)([^`]-)%1", "%2")
+    s = s:gsub("%*%*(.-)%*%*", "%1")
+    s = s:gsub("~~(.-)~~", "%1")
+    s = s:gsub("%*([^%*%s][^%*]-)%*", "%1")
+  end
+  return vim.fn.strdisplaywidth(s)
+end
+
 ---Display width of cell i (text between pipe i and i+1) of a row.
 ---@param row InlineMarkdown.TableRow
 ---@param i integer
 ---@return integer
 local function cell_width(row, i)
-  return vim.fn.strdisplaywidth(row.line:sub(row.pipes[i] + 1, row.pipes[i + 1] - 1))
+  return rendered_width(row.line:sub(row.pipes[i] + 1, row.pipes[i + 1] - 1))
 end
 
 ---Target display width per column: max cell width across header and data rows.
