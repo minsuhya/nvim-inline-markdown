@@ -6,6 +6,7 @@ local block_query_src = [[
   (atx_heading) @heading
   (list_item) @list_item
   (fenced_code_block) @code
+  (block_quote) @callout
   (block_quote_marker) @quote
   (thematic_break) @rule
   (pipe_table) @table
@@ -16,12 +17,23 @@ local inline_query_src = [[
   (emphasis) @emphasis
   (strong_emphasis) @emphasis
   (code_span) @code_span
+  (strikethrough) @strikethrough
+  (uri_autolink) @autolink
+]]
+
+-- for parsers built without the GFM strikethrough/autolink extensions
+local inline_query_fallback_src = [[
+  (inline_link) @link
+  (emphasis) @emphasis
+  (strong_emphasis) @emphasis
+  (code_span) @code_span
 ]]
 
 local renderers = {
   heading = require("inline-markdown.render.heading"),
   list_item = require("inline-markdown.render.list"),
   code = require("inline-markdown.render.code"),
+  callout = require("inline-markdown.render.callout"),
   quote = require("inline-markdown.render.quote"),
   rule = require("inline-markdown.render.rule"),
   table = require("inline-markdown.render.table"),
@@ -37,6 +49,9 @@ local function queries()
   end
   if not inline_query then
     local ok, q = pcall(vim.treesitter.query.parse, "markdown_inline", inline_query_src)
+    if not ok then
+      ok, q = pcall(vim.treesitter.query.parse, "markdown_inline", inline_query_fallback_src)
+    end
     inline_query = ok and q or false
   end
   return block_query, inline_query

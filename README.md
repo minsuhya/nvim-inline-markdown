@@ -5,7 +5,13 @@ rendered as real images** inside your buffer.
 
 - Headings with icons and subtle backgrounds, styled bullets and checkboxes,
   code block backgrounds with language labels, box-drawing table borders,
-  quote bars, concealed `**bold**` / `*italic*` / `` `code` `` / link syntax
+  quote bars, concealed `**bold**` / `*italic*` / `` `code` `` / `~~strike~~` /
+  link / `<autolink>` syntax
+- GFM alerts (`> [!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`)
+  rendered as colored icon badges with matching quote bars
+- Two style presets: `default` (icons + heading backgrounds) and `github`
+  (underlined h1/h2, `▎` accent bars, closed table borders with header shading —
+  closest to GitHub's web rendering)
 - ` ```mermaid ` blocks are rendered to PNG via
   [mermaid-cli](https://github.com/mermaid-js/mermaid-cli) (async, content-hash
   cached) and displayed inline below the block via
@@ -69,7 +75,8 @@ require("inline-markdown").setup({
   debounce_ms = 300,
   win_options = { conceallevel = 2, concealcursor = "nc" },
   style = {
-    headings = { icons = { "󰲡 ", "󰲣 ", "󰲥 ", "󰲧 ", "󰲩 ", "󰲫 " }, background = true },
+    preset = "default",        -- "default" | "github"
+    headings = { icons = { "󰲡 ", "󰲣 ", "󰲥 ", "󰲧 ", "󰲩 ", "󰲫 " }, background = true, bar = "▎" },
     bullets = { "●", "○", "◆", "◇" },
     checkbox = { unchecked = "󰄱 ", checked = "󰱒 " },
     code = { background = true, language_label = true },

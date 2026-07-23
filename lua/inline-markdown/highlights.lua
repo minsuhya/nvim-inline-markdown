@@ -42,10 +42,18 @@ function M.setup()
   end
 
   local comment = get_hl("Comment")
+  local subtle_bg = blend(comment.fg, normal_bg, 0.08)
   vim.api.nvim_set_hl(0, "InlineMarkdownCode", {
     default = true,
-    bg = blend(comment.fg, normal_bg, 0.08),
+    bg = subtle_bg,
   })
+  vim.api.nvim_set_hl(0, "InlineMarkdownCodeSpan", { default = true, bg = subtle_bg })
+  vim.api.nvim_set_hl(0, "InlineMarkdownHeadingRule", { default = true, link = "FloatBorder" })
+  vim.api.nvim_set_hl(0, "InlineMarkdownCalloutNote", { default = true, link = "DiagnosticInfo" })
+  vim.api.nvim_set_hl(0, "InlineMarkdownCalloutTip", { default = true, link = "DiagnosticOk" })
+  vim.api.nvim_set_hl(0, "InlineMarkdownCalloutImportant", { default = true, link = "DiagnosticHint" })
+  vim.api.nvim_set_hl(0, "InlineMarkdownCalloutWarning", { default = true, link = "DiagnosticWarn" })
+  vim.api.nvim_set_hl(0, "InlineMarkdownCalloutCaution", { default = true, link = "DiagnosticError" })
   vim.api.nvim_set_hl(0, "InlineMarkdownCodeLang", { default = true, link = "Comment" })
   vim.api.nvim_set_hl(0, "InlineMarkdownBullet", { default = true, link = "Special" })
   vim.api.nvim_set_hl(0, "InlineMarkdownCheckboxDone", { default = true, link = "DiagnosticOk" })
@@ -54,7 +62,11 @@ function M.setup()
   vim.api.nvim_set_hl(0, "InlineMarkdownLink", { default = true, link = "@markup.link.label.markdown_inline" })
   vim.api.nvim_set_hl(0, "InlineMarkdownRule", { default = true, link = "FloatBorder" })
   vim.api.nvim_set_hl(0, "InlineMarkdownTableBorder", { default = true, link = "FloatBorder" })
-  vim.api.nvim_set_hl(0, "InlineMarkdownTableHead", { default = true, bold = true })
+  if require("inline-markdown.config").options.style.preset == "github" then
+    vim.api.nvim_set_hl(0, "InlineMarkdownTableHead", { default = true, bold = true, bg = subtle_bg })
+  else
+    vim.api.nvim_set_hl(0, "InlineMarkdownTableHead", { default = true, bold = true })
+  end
   vim.api.nvim_set_hl(0, "InlineMarkdownPending", { default = true, link = "DiagnosticHint" })
   vim.api.nvim_set_hl(0, "InlineMarkdownError", { default = true, link = "DiagnosticError" })
 end

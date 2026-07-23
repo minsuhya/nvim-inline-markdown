@@ -2,7 +2,10 @@
 
 ## Heading Two
 
-Some paragraph with **bold**, *italic*, `code span` and a [link](https://example.com).
+Some paragraph with **bold**, *italic*, `code span`, ~~strike~~, <https://auto.link> and a [link](https://example.com).
+
+> [!NOTE]
+> This is a GFM callout.
 
 - item one
 - item two

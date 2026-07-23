@@ -17,11 +17,16 @@ M.defaults = {
     concealcursor = "nc",
   },
   style = {
+    -- "default": icon + background headings, inner table borders
+    -- "github":  underlined h1/h2, ▎-bar headings, full table borders + header shading
+    preset = "default",
     headings = {
-      -- one icon per level (h1..h6)
+      -- one icon per level (h1..h6), used by the "default" preset
       icons = { "󰲡 ", "󰲣 ", "󰲥 ", "󰲧 ", "󰲩 ", "󰲫 " },
-      -- highlight the full line background
+      -- highlight the full line background ("default" preset)
       background = true,
+      -- accent bar used by the "github" preset for h2..h6
+      bar = "▎",
     },
     bullets = { "●", "○", "◆", "◇" }, -- cycled by indent level
     checkbox = {
@@ -38,8 +43,16 @@ M.defaults = {
     link = { icon = "󰌹 " },
     rule = { char = "─", width = 80 },
     table_borders = true,
-    -- conceal **bold** / *italic* / `code` delimiters
+    -- conceal **bold** / *italic* / `code` / ~~strike~~ delimiters
     conceal_inline = true,
+    -- GFM alerts: > [!NOTE] etc. rendered as colored badges
+    callout = {
+      note = { icon = "󰋽 ", label = "Note", hl = "InlineMarkdownCalloutNote" },
+      tip = { icon = "󰌶 ", label = "Tip", hl = "InlineMarkdownCalloutTip" },
+      important = { icon = "󰅾 ", label = "Important", hl = "InlineMarkdownCalloutImportant" },
+      warning = { icon = "󰀪 ", label = "Warning", hl = "InlineMarkdownCalloutWarning" },
+      caution = { icon = "󰳦 ", label = "Caution", hl = "InlineMarkdownCalloutCaution" },
+    },
   },
   mermaid = {
     enabled = true,

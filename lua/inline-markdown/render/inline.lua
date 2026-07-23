@@ -45,10 +45,11 @@ local function render_link(buf, node)
   })
 end
 
----Conceal the delimiters of emphasis / strong_emphasis / code_span.
+---Conceal the delimiters of emphasis / strong_emphasis / code_span / strikethrough.
 ---@param buf integer
 ---@param node TSNode
-local function conceal_delimiters(buf, node)
+---@param fallback_width integer chars to conceal on each side when no delimiter nodes exist
+local function conceal_delimiters(buf, node, fallback_width)
   local found = false
   for child in node:iter_children() do
     local t = child:type()
@@ -58,10 +59,10 @@ local function conceal_delimiters(buf, node)
     end
   end
   if not found then
-    -- fallback: conceal one char on each side
+    local w = fallback_width or 1
     local srow, scol, erow, ecol = node:range()
-    conceal_range(buf, srow, scol, srow, scol + 1)
-    conceal_range(buf, erow, ecol - 1, erow, ecol)
+    conceal_range(buf, srow, scol, srow, scol + w)
+    conceal_range(buf, erow, ecol - w, erow, ecol)
   end
 end
 
@@ -73,9 +74,32 @@ function M.render(buf, capture, node)
     render_link(buf, node)
     return
   end
+  if capture == "autolink" then
+    -- <https://…>: hide the angle brackets, style as a link
+    local srow, scol, erow, ecol = node:range()
+    conceal_range(buf, srow, scol, srow, scol + 1)
+    conceal_range(buf, erow, ecol - 1, erow, ecol)
+    vim.api.nvim_buf_set_extmark(buf, state.ns, srow, scol, {
+      end_row = erow,
+      end_col = ecol,
+      hl_group = "InlineMarkdownLink",
+    })
+    return
+  end
+  if capture == "code_span" then
+    -- chip background across the whole span (concealed backticks included)
+    local srow, scol, erow, ecol = node:range()
+    vim.api.nvim_buf_set_extmark(buf, state.ns, srow, scol, {
+      end_row = erow,
+      end_col = ecol,
+      hl_group = "InlineMarkdownCodeSpan",
+    })
+  end
   if not config.options.style.conceal_inline then return end
   if capture == "emphasis" or capture == "code_span" then
-    conceal_delimiters(buf, node)
+    conceal_delimiters(buf, node, 1)
+  elseif capture == "strikethrough" then
+    conceal_delimiters(buf, node, 2)
   end
 end
 

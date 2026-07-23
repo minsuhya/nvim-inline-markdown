@@ -82,6 +82,40 @@ vim.wait(60000, function() return done end, 200)
 check("broken diagram reports error", cache.errors[bad_hash] ~= nil)
 check("broken diagram produced no png", not cache.exists(bad_hash))
 
+-- GFM extras (default preset): callout badge + recolored bars
+local function count_marks(pred)
+  local n = 0
+  for _, m in ipairs(vim.api.nvim_buf_get_extmarks(buf, ns, 0, -1, { details = true })) do
+    if pred(m[4]) then n = n + 1 end
+  end
+  return n
+end
+check("callout badge rendered", count_marks(function(d)
+  return d.virt_text and d.virt_text[1] and d.virt_text[1][1]:match("Note") ~= nil
+end) >= 1)
+
+-- github preset: underlines + closed table borders
+require("inline-markdown").disable(buf)
+require("inline-markdown").setup({ style = { preset = "github" }, mermaid = { scale = 1, width = 600 } })
+require("inline-markdown").enable(buf)
+check("github preset enabled", require("inline-markdown").is_enabled(buf))
+check("heading underline virt line", count_marks(function(d)
+  return d.virt_lines and not d.virt_lines_above and d.virt_lines[1]
+    and d.virt_lines[1][1] and d.virt_lines[1][1][1]:match("^──") ~= nil
+end) >= 2)
+check("table top border (virt_lines_above)", count_marks(function(d)
+  return d.virt_lines_above and d.virt_lines[1] and d.virt_lines[1][1][1]:match("┌") ~= nil
+end) >= 1)
+check("table bottom border", count_marks(function(d)
+  return d.virt_lines and d.virt_lines[1] and d.virt_lines[1][1][1]:match("└") ~= nil
+end) >= 1)
+check("heading accent bar (inline)", count_marks(function(d)
+  return d.virt_text and d.virt_text[1] and d.virt_text[1][1] == "▎"
+end) >= 1)
+
+-- restore default preset config for the teardown assertions
+require("inline-markdown").setup({ mermaid = { scale = 1, width = 600 } })
+
 -- disable restores everything
 require("inline-markdown").disable(buf)
 local marks3 = vim.api.nvim_buf_get_extmarks(buf, ns, 0, -1, {})
