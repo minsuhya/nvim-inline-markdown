@@ -68,6 +68,17 @@ local function attach_autocmds(buf)
     buffer = buf,
     callback = function() M.disable(buf) end,
   })
+  -- Terminal resize (including tmux pane zoom) wipes passthrough-drawn images
+  -- while image.nvim still considers them rendered — destroy and recreate.
+  vim.api.nvim_create_autocmd("VimResized", {
+    group = st.augroup,
+    callback = function()
+      if state.is_enabled(buf) and vim.api.nvim_buf_is_valid(buf) then
+        require("inline-markdown.mermaid.display").clear(buf)
+        debounced_render(buf)
+      end
+    end,
+  })
 end
 
 ---@param buf integer|nil
@@ -113,10 +124,14 @@ function M.toggle(buf)
 end
 
 ---Force a re-render; also clears remembered mermaid errors so they retry.
+---Images are destroyed and recreated so diagrams wiped by terminal redraws
+---(e.g. tmux pane zoom) are retransmitted instead of hitting image.nvim's
+---"already rendered" cache.
 ---@param buf integer|nil
 function M.refresh(buf)
   buf = (buf and buf ~= 0) and buf or vim.api.nvim_get_current_buf()
   require("inline-markdown.mermaid.cache").clear_errors()
+  require("inline-markdown.mermaid.display").clear(buf)
   if state.is_enabled(buf) then render(buf) end
 end
 
