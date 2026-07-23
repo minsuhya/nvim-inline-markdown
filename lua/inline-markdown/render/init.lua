@@ -8,6 +8,7 @@ local block_query_src = [[
   (fenced_code_block) @code
   (block_quote) @callout
   (block_quote_marker) @quote
+  (block_continuation) @quote
   (thematic_break) @rule
   (pipe_table) @table
 ]]

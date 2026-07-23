@@ -25,15 +25,18 @@ function M.render(buf, node)
     virt_text_pos = "inline",
   })
 
-  -- recolor every quote bar of this block to match the callout type
-  marker_query = marker_query or vim.treesitter.query.parse("markdown", "(block_quote_marker) @m")
+  -- recolor every quote bar of this block (continuation lines included)
+  marker_query = marker_query
+    or vim.treesitter.query.parse("markdown", "[(block_quote_marker) (block_continuation)] @m")
+  local quote = require("inline-markdown.render.quote")
   for _, marker in marker_query:iter_captures(node, buf) do
-    local mrow, mcol = marker:range()
-    vim.api.nvim_buf_set_extmark(buf, state.ns, mrow, mcol, {
-      virt_text = { { config.options.style.quote.icon, spec.hl } },
-      virt_text_pos = "overlay",
-      priority = 4500, -- above the plain quote renderer's overlay
-    })
+    for _, pos in ipairs(quote.positions(buf, marker)) do
+      vim.api.nvim_buf_set_extmark(buf, state.ns, pos[1], pos[2], {
+        virt_text = { { config.options.style.quote.icon, spec.hl } },
+        virt_text_pos = "overlay",
+        priority = 4500, -- above the plain quote renderer's overlay
+      })
+    end
   end
 end
 
