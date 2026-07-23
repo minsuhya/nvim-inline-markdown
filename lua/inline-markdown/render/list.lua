@@ -42,15 +42,20 @@ function M.render(buf, node)
     local done = task:type() == "task_list_marker_checked"
     local icon = done and style.checkbox.checked or style.checkbox.unchecked
     local hl = done and "InlineMarkdownCheckboxDone" or "InlineMarkdownCheckboxTodo"
-    -- hide the list marker, overlay the checkbox icon on `[x]`
+    -- hide the list marker and the whole `[x]`, then insert the icon
     vim.api.nvim_buf_set_extmark(buf, state.ns, mrow, mcol, {
       end_col = mecol,
       conceal = "",
     })
-    local trow, tcol = task:range()
+    local trow, tcol, terow, tecol = task:range()
+    vim.api.nvim_buf_set_extmark(buf, state.ns, trow, tcol, {
+      end_row = terow,
+      end_col = tecol,
+      conceal = "",
+    })
     vim.api.nvim_buf_set_extmark(buf, state.ns, trow, tcol, {
       virt_text = { { icon, hl } },
-      virt_text_pos = "overlay",
+      virt_text_pos = "inline",
     })
     return
   end

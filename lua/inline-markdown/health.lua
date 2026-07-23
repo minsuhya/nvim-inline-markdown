@@ -44,7 +44,7 @@ function M.check()
   -- terminal environment
   if vim.env.TMUX then
     local out = vim.fn.system({ "tmux", "show", "-Apg", "allow-passthrough" })
-    if out:match("allow%-passthrough%s+(all)") or out:match("allow%-passthrough%s+on") then
+    if out:match("allow%-passthrough%*?%s+all") or out:match("allow%-passthrough%*?%s+on") then
       health.ok("tmux allow-passthrough is enabled")
     else
       health.warn("tmux detected but allow-passthrough is off — images will not display", {

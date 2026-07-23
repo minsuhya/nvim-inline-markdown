@@ -39,25 +39,35 @@ function M.render(buf, node)
 
   local lang = M.language(buf, node)
   if style.language_label and lang then
-    local line = vim.api.nvim_buf_get_lines(buf, srow, srow + 1, false)[1] or ""
-    -- cover the entire opening fence (```lang) with a label
-    local label = " " .. lang
-    if vim.fn.strdisplaywidth(label) < vim.fn.strdisplaywidth(line) then
-      label = label .. string.rep(" ", vim.fn.strdisplaywidth(line) - vim.fn.strdisplaywidth(label))
+    -- Neovim 0.11+ hides fence lines entirely (conceal_lines in the runtime
+    -- markdown query), so the label goes right-aligned on the first content
+    -- line; on older versions it overlays the opening fence.
+    if vim.fn.has("nvim-0.11") == 1 then
+      if srow + 1 <= last - 1 then
+        vim.api.nvim_buf_set_extmark(buf, state.ns, srow + 1, 0, {
+          virt_text = { { " " .. lang .. " ", "InlineMarkdownCodeLang" } },
+          virt_text_pos = "right_align",
+        })
+      end
+    else
+      local line = vim.api.nvim_buf_get_lines(buf, srow, srow + 1, false)[1] or ""
+      local label = " " .. lang
+      if vim.fn.strdisplaywidth(label) < vim.fn.strdisplaywidth(line) then
+        label = label .. string.rep(" ", vim.fn.strdisplaywidth(line) - vim.fn.strdisplaywidth(label))
+      end
+      vim.api.nvim_buf_set_extmark(buf, state.ns, srow, 0, {
+        virt_text = { { label, "InlineMarkdownCodeLang" } },
+        virt_text_pos = "overlay",
+      })
+      -- hide the closing fence backticks
+      local close_line = vim.api.nvim_buf_get_lines(buf, last, last + 1, false)[1] or ""
+      if close_line:match("^%s*[`~]+%s*$") then
+        vim.api.nvim_buf_set_extmark(buf, state.ns, last, 0, {
+          virt_text = { { string.rep(" ", #close_line), "InlineMarkdownCode" } },
+          virt_text_pos = "overlay",
+        })
+      end
     end
-    vim.api.nvim_buf_set_extmark(buf, state.ns, srow, 0, {
-      virt_text = { { label, "InlineMarkdownCodeLang" } },
-      virt_text_pos = "overlay",
-    })
-  end
-
-  -- hide the closing fence backticks
-  local close_line = vim.api.nvim_buf_get_lines(buf, last, last + 1, false)[1] or ""
-  if close_line:match("^%s*[`~]+%s*$") then
-    vim.api.nvim_buf_set_extmark(buf, state.ns, last, 0, {
-      virt_text = { { string.rep(" ", #close_line), "InlineMarkdownCode" } },
-      virt_text_pos = "overlay",
-    })
   end
 end
 
