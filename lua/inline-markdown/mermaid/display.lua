@@ -71,9 +71,7 @@ function M.error(buf, block, msg)
     lines[#lines + 1] = { { "  ✘ " .. l, "InlineMarkdownError" } }
     if #lines >= 3 then break end
   end
-  if #lines == 0 then
-    lines = { { { "  ✘ mermaid render failed", "InlineMarkdownError" } } }
-  end
+  if #lines == 0 then lines = { { { "  ✘ mermaid render failed", "InlineMarkdownError" } } } end
   vim.api.nvim_buf_set_extmark(buf, state.ns, block.end_row, 0, {
     virt_lines = lines,
   })

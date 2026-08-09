@@ -45,9 +45,7 @@ local inline = require("inline-markdown.render.inline")
 local block_query, inline_query
 
 local function queries()
-  if not block_query then
-    block_query = vim.treesitter.query.parse("markdown", block_query_src)
-  end
+  if not block_query then block_query = vim.treesitter.query.parse("markdown", block_query_src) end
   if not inline_query then
     local ok, q = pcall(vim.treesitter.query.parse, "markdown_inline", inline_query_src)
     if not ok then
@@ -82,9 +80,7 @@ function M.render(buf)
       for id, node in bq:iter_captures(root, buf, 0, -1) do
         local name = bq.captures[id]
         local renderer = renderers[name]
-        if renderer then
-          pcall(renderer.render, buf, node)
-        end
+        if renderer then pcall(renderer.render, buf, node) end
       end
     elseif lang == "markdown_inline" and iq then
       for id, node in iq:iter_captures(root, buf, 0, -1) do

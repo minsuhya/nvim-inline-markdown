@@ -11,9 +11,7 @@ function M.language(buf, node)
   for child in node:iter_children() do
     if child:type() == "info_string" then
       for sub in child:iter_children() do
-        if sub:type() == "language" then
-          return vim.treesitter.get_node_text(sub, buf)
-        end
+        if sub:type() == "language" then return vim.treesitter.get_node_text(sub, buf) end
       end
     end
   end

@@ -39,12 +39,18 @@ function M.run(content, hash, cb)
 
   local cmd = {
     m.mmdc_path,
-    "-i", src,
-    "-o", cache.path(hash),
-    "-b", m.background,
-    "-t", config.mermaid_theme(),
-    "-w", tostring(m.width),
-    "-s", tostring(m.scale),
+    "-i",
+    src,
+    "-o",
+    cache.path(hash),
+    "-b",
+    m.background,
+    "-t",
+    config.mermaid_theme(),
+    "-w",
+    tostring(m.width),
+    "-s",
+    tostring(m.scale),
     "--quiet",
   }
   vim.list_extend(cmd, m.extra_args)

@@ -23,7 +23,9 @@ local function sync_win_options(buf, enable)
       local saved = st.saved_win_opts[win]
       if saved then
         for opt, value in pairs(saved) do
-          pcall(function() vim.wo[win][opt] = value end)
+          pcall(function()
+            vim.wo[win][opt] = value
+          end)
         end
         st.saved_win_opts[win] = nil
       end
@@ -36,9 +38,13 @@ local function debounced_render(buf)
   local st = state.get(buf)
   if st.timer then st.timer:stop() end
   st.timer = st.timer or vim.uv.new_timer()
-  st.timer:start(config.options.debounce_ms, 0, vim.schedule_wrap(function()
-    if state.is_enabled(buf) and vim.api.nvim_buf_is_valid(buf) then render(buf) end
-  end))
+  st.timer:start(
+    config.options.debounce_ms,
+    0,
+    vim.schedule_wrap(function()
+      if state.is_enabled(buf) and vim.api.nvim_buf_is_valid(buf) then render(buf) end
+    end)
+  )
 end
 
 ---@param buf integer
@@ -48,12 +54,16 @@ local function attach_autocmds(buf)
   vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
     group = st.augroup,
     buffer = buf,
-    callback = function() debounced_render(buf) end,
+    callback = function()
+      debounced_render(buf)
+    end,
   })
   vim.api.nvim_create_autocmd({ "InsertLeave", "BufWritePost" }, {
     group = st.augroup,
     buffer = buf,
-    callback = function() render(buf) end,
+    callback = function()
+      render(buf)
+    end,
   })
   vim.api.nvim_create_autocmd("BufWinEnter", {
     group = st.augroup,
@@ -66,7 +76,9 @@ local function attach_autocmds(buf)
   vim.api.nvim_create_autocmd({ "BufDelete", "BufUnload" }, {
     group = st.augroup,
     buffer = buf,
-    callback = function() M.disable(buf) end,
+    callback = function()
+      M.disable(buf)
+    end,
   })
   -- Terminal resize (including tmux pane zoom) wipes passthrough-drawn images
   -- while image.nvim still considers them rendered — destroy and recreate.
@@ -111,16 +123,18 @@ function M.disable(buf)
     st.augroup = nil
   end
   sync_win_options(buf, false)
-  if vim.api.nvim_buf_is_valid(buf) then
-    require("inline-markdown.render").clear(buf)
-  end
+  if vim.api.nvim_buf_is_valid(buf) then require("inline-markdown.render").clear(buf) end
   require("inline-markdown.mermaid.display").clear(buf)
 end
 
 ---@param buf integer|nil
 function M.toggle(buf)
   buf = (buf and buf ~= 0) and buf or vim.api.nvim_get_current_buf()
-  if state.is_enabled(buf) then M.disable(buf) else M.enable(buf) end
+  if state.is_enabled(buf) then
+    M.disable(buf)
+  else
+    M.enable(buf)
+  end
 end
 
 ---Force a re-render; also clears remembered mermaid errors so they retry.
@@ -153,7 +167,9 @@ function M.setup(opts)
     pattern = config.options.file_types,
     callback = function(ev)
       if config.options.keymap then
-        vim.keymap.set("n", config.options.keymap, function() M.toggle(ev.buf) end, {
+        vim.keymap.set("n", config.options.keymap, function()
+          M.toggle(ev.buf)
+        end, {
           buffer = ev.buf,
           desc = "Toggle inline markdown rendering",
         })
@@ -168,7 +184,9 @@ function M.setup(opts)
 
   vim.api.nvim_create_autocmd("ColorScheme", {
     group = group,
-    callback = function() require("inline-markdown.highlights").setup() end,
+    callback = function()
+      require("inline-markdown.highlights").setup()
+    end,
   })
 end
 

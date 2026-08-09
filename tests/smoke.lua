@@ -24,9 +24,7 @@ end
 -- mmdc drives a headless chromium, which needs --no-sandbox on most CI runners;
 -- MERMAID_PUPPETEER_CONFIG lets the workflow point mmdc at such a config.
 local mermaid_opts = { scale = 1, width = 600 }
-if vim.env.MERMAID_PUPPETEER_CONFIG then
-  mermaid_opts.extra_args = { "-p", vim.env.MERMAID_PUPPETEER_CONFIG }
-end
+if vim.env.MERMAID_PUPPETEER_CONFIG then mermaid_opts.extra_args = { "-p", vim.env.MERMAID_PUPPETEER_CONFIG } end
 
 require("inline-markdown").setup({ mermaid = mermaid_opts })
 
@@ -69,9 +67,7 @@ end
 -- mermaid detection
 local blocks = require("inline-markdown.mermaid.detect").blocks(buf)
 check("exactly one mermaid block detected", #blocks == 1, "got " .. #blocks)
-if #blocks == 1 then
-  check("mermaid content extracted", blocks[1].content:match("flowchart TD") ~= nil)
-end
+if #blocks == 1 then check("mermaid content extracted", blocks[1].content:match("flowchart TD") ~= nil) end
 
 -- Probe the pipeline with a diagram known to be valid (up to 60s: the first run
 -- may download chromium deps). cache.errors records mmdc stderr, so a chromium
@@ -85,9 +81,10 @@ do
   require("inline-markdown.mermaid.job").run(probe, cache.hash(probe), function(ok, err)
     settled, mmdc_ok, mmdc_err = true, ok, err
   end)
-  if not vim.wait(60000, function() return settled end, 200) then
-    mmdc_err = "mmdc did not settle within 60s"
-  end
+  local settled_in_time = vim.wait(60000, function()
+    return settled
+  end, 200)
+  if not settled_in_time then mmdc_err = "mmdc did not settle within 60s" end
 end
 if mmdc_ok then
   check("mmdc pipeline usable", true)
@@ -113,8 +110,12 @@ if mmdc_ok then
   local bad = "not a valid mermaid diagram at all {{{"
   local bad_hash = cache.hash(bad)
   local done = false
-  require("inline-markdown.mermaid.job").run(bad, bad_hash, function() done = true end)
-  vim.wait(60000, function() return done end, 200)
+  require("inline-markdown.mermaid.job").run(bad, bad_hash, function()
+    done = true
+  end)
+  vim.wait(60000, function()
+    return done
+  end, 200)
   check("broken diagram reports error", cache.errors[bad_hash] ~= nil)
   check("broken diagram produced no png", not cache.exists(bad_hash))
 else
@@ -144,8 +145,11 @@ require("inline-markdown").setup({ style = { preset = "github" }, mermaid = merm
 require("inline-markdown").enable(buf)
 check("github preset enabled", require("inline-markdown").is_enabled(buf))
 check("heading underline virt line", count_marks(function(d)
-  return d.virt_lines and not d.virt_lines_above and d.virt_lines[1]
-    and d.virt_lines[1][1] and d.virt_lines[1][1][1]:match("^──") ~= nil
+  return d.virt_lines
+    and not d.virt_lines_above
+    and d.virt_lines[1]
+    and d.virt_lines[1][1]
+    and d.virt_lines[1][1][1]:match("^──") ~= nil
 end) >= 2)
 check("table top border (virt_lines_above)", count_marks(function(d)
   return d.virt_lines_above and d.virt_lines[1] and d.virt_lines[1][1][1]:match("┌") ~= nil

@@ -10,9 +10,7 @@ local M = {}
 ---@return { [1]: integer, [2]: integer }[] (row, col) pairs
 function M.positions(buf, node)
   local row, col = node:range()
-  if node:type() == "block_quote_marker" then
-    return { { row, col } }
-  end
+  if node:type() == "block_quote_marker" then return { { row, col } } end
   local out = {}
   local text = vim.treesitter.get_node_text(node, buf)
   local first_line = text:match("^[^\n]*")

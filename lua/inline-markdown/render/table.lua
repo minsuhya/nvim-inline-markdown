@@ -33,9 +33,7 @@ local function collect_rows(buf, node)
       local lnum = child:range()
       local line = vim.api.nvim_buf_get_lines(buf, lnum, lnum + 1, false)[1] or ""
       local pipes = scan_pipes(line)
-      if #pipes >= 2 then
-        rows[#rows + 1] = { lnum = lnum, kind = t, line = line, pipes = pipes }
-      end
+      if #pipes >= 2 then rows[#rows + 1] = { lnum = lnum, kind = t, line = line, pipes = pipes } end
     end
   end
   return rows
