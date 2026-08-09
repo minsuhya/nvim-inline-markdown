@@ -110,7 +110,21 @@ check("table bottom border", count_marks(function(d)
   return d.virt_lines and d.virt_lines[1] and d.virt_lines[1][1][1]:match("└") ~= nil
 end) >= 1)
 check("heading accent bar (inline)", count_marks(function(d)
-  return d.virt_text and d.virt_text[1] and d.virt_text[1][1] == "▎"
+  return d.virt_text and d.virt_text[1] and d.virt_text[1][1] == "█ "
+end) >= 1)
+-- a bar list gives each level its own glyph, so depth never needs counting
+check("heading accent bars differ per level", count_marks(function(d)
+  return d.virt_text and d.virt_text[1] and d.virt_text[1][1] == "▌ "
+end) >= 1)
+-- a bar string still repeats one glyph per depth (h2 ▎, h3 ▎▎, …)
+require("inline-markdown").disable(buf)
+require("inline-markdown").setup({
+  style = { preset = "github", headings = { bar = "▎" } },
+  mermaid = { scale = 1, width = 600 },
+})
+require("inline-markdown").enable(buf)
+check("heading accent bar (repeated string)", count_marks(function(d)
+  return d.virt_text and d.virt_text[1] and d.virt_text[1][1] == "▎▎"
 end) >= 1)
 
 -- restore default preset config for the teardown assertions

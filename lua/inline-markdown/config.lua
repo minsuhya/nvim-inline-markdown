@@ -25,8 +25,11 @@ M.defaults = {
       icons = { "󰲡 ", "󰲣 ", "󰲥 ", "󰲧 ", "󰲩 ", "󰲫 " },
       -- highlight the full line background ("default" preset)
       background = true,
-      -- accent bar used by the "github" preset for h2..h6
-      bar = "▎",
+      -- accent bar used by the "github" preset. A list gives one glyph per
+      -- level (h1..h6) so thickness encodes depth and every heading's text
+      -- starts at the same column; a plain string is repeated once per depth
+      -- instead (h2 "▎", h3 "▎▎", …).
+      bar = { "█", "▊", "▌", "▎", "▏", "╎" },
     },
     bullets = { "●", "○", "◆", "◇" }, -- cycled by indent level
     checkbox = {

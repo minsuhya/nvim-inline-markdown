@@ -10,8 +10,11 @@ rendered as real images** inside your buffer.
 - GFM alerts (`> [!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`)
   rendered as colored icon badges with matching quote bars
 - Two style presets: `default` (icons + heading backgrounds) and `github`
-  (underlined h1/h2, `▎` accent bars, closed table borders with header shading —
-  closest to GitHub's web rendering)
+  (underlined h1/h2, thickness-graded `█ ▊ ▌ ▎` accent bars, closed table
+  borders with header shading — closest to GitHub's web rendering)
+- Heading depth is doubly encoded: the accent bar thins out level by level, and
+  levels a colorscheme leaves identical (usually h4..h6) are progressively faded
+  toward the background so they recede instead of all reading as the same level
 - ` ```mermaid ` blocks are rendered to PNG via
   [mermaid-cli](https://github.com/mermaid-js/mermaid-cli) (async, content-hash
   cached) and displayed inline below the block via
@@ -76,7 +79,14 @@ require("inline-markdown").setup({
   win_options = { conceallevel = 2, concealcursor = "nc" },
   style = {
     preset = "default",        -- "default" | "github"
-    headings = { icons = { "󰲡 ", "󰲣 ", "󰲥 ", "󰲧 ", "󰲩 ", "󰲫 " }, background = true, bar = "▎" },
+    headings = {
+      icons = { "󰲡 ", "󰲣 ", "󰲥 ", "󰲧 ", "󰲩 ", "󰲫 " },
+      background = true,
+      -- "github" preset accent bar. A list = one glyph per level (h1..h6), so
+      -- thickness marks depth and all heading text lines up; a string like
+      -- "▎" is repeated per depth instead (h2 "▎", h3 "▎▎", …).
+      bar = { "█", "▊", "▌", "▎", "▏", "╎" },
+    },
     bullets = { "●", "○", "◆", "◇" },
     checkbox = { unchecked = "󰄱 ", checked = "󰱒 " },
     code = { background = true, language_label = true },

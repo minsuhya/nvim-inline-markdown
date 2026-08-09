@@ -26,18 +26,33 @@ function M.setup()
   local normal = get_hl("Normal")
   local normal_bg = normal.bg or (vim.o.background == "dark" and 0x000000 or 0xffffff)
 
+  -- Resolve one color per heading level. Most colorschemes only define
+  -- distinct colors down to h3 and reuse that color for h4..h6, which erases
+  -- the depth cue; fade every repeat toward the background so deeper headings
+  -- visibly recede instead of all reading as the same level.
+  local title_fg = get_hl("Title").fg
+  local fgs, first_use = {}, {}
   for level = 1, 6 do
-    local src = get_hl("@markup.heading." .. level .. ".markdown")
-    if not src.fg then src = get_hl("Title") end
+    local fg = get_hl("@markup.heading." .. level .. ".markdown").fg or title_fg
+    local origin = fg and first_use[fg]
+    if origin then
+      fgs[level] = blend(fg, normal_bg, math.max(0.4, 1 - (level - origin) * 0.2))
+    else
+      if fg then first_use[fg] = level end
+      fgs[level] = fg
+    end
+  end
+
+  for level = 1, 6 do
     vim.api.nvim_set_hl(0, "InlineMarkdownH" .. level, {
       default = true,
-      fg = src.fg,
+      fg = fgs[level],
       bold = true,
     })
     -- subtle background derived from the heading color
     vim.api.nvim_set_hl(0, "InlineMarkdownH" .. level .. "Bg", {
       default = true,
-      bg = blend(src.fg, normal_bg, 0.12),
+      bg = blend(fgs[level], normal_bg, 0.12),
     })
   end
 

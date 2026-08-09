@@ -24,11 +24,19 @@ function M.render(buf, node)
       end_col = mecol,
       conceal = "",
     })
-    -- h2..h6 get colored accent bars (one per depth: h2 ▎, h3 ▎▎, …);
-    -- h1/h2 get a full-width underline
-    if level >= 2 then
+    -- colored accent bar, plus a full-width underline for h1/h2. A bar list
+    -- gives every level one fixed-width glyph (thickness = depth); a bar
+    -- string keeps the older repeat-per-depth look, which starts at h2.
+    local bar = style.bar
+    local mark
+    if type(bar) == "table" then
+      mark = (bar[level] or bar[#bar]) .. " "
+    elseif level >= 2 then
+      mark = string.rep(bar, level - 1)
+    end
+    if mark then
       vim.api.nvim_buf_set_extmark(buf, state.ns, row, col, {
-        virt_text = { { string.rep(style.bar, level - 1), hl } },
+        virt_text = { { mark, hl } },
         virt_text_pos = "inline",
       })
     end
