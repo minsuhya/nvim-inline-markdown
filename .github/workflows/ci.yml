@@ -20,5 +20,11 @@ jobs:
           version: stable
       - name: Install mermaid-cli
         run: npm install -g @mermaid-js/mermaid-cli
+      # mmdc drives headless chromium, which cannot start under the runner's
+      # default sandbox; without this every diagram fails to render.
+      - name: Configure puppeteer for the runner
+        run: echo '{"args":["--no-sandbox","--disable-setuid-sandbox"]}' > "$RUNNER_TEMP/puppeteer.json"
       - name: Run smoke tests
+        env:
+          MERMAID_PUPPETEER_CONFIG: ${{ runner.temp }}/puppeteer.json
         run: nvim --headless --clean -l tests/smoke.lua
